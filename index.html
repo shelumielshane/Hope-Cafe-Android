@@ -264,7 +264,7 @@
         <div id="billingSection" class="space-y-4">
             <div class="bg-white rounded-xl shadow-lg p-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-800">🧾 New Order</h2>
+                    <h2 class="text-xl font-semibold text-gray-800">New Order</h2>
                     <div id="currentDateTime" class="text-sm font-medium text-amber-700"></div>
                 </div>
                 
@@ -803,15 +803,12 @@
         function updateDateTime() {
             const now = new Date();
             const dateStr = now.toLocaleDateString('en-IN', { 
-                weekday: 'short', 
-                year: 'numeric', 
                 month: 'short', 
                 day: 'numeric' 
             });
             const timeStr = now.toLocaleTimeString('en-IN', { 
                 hour: '2-digit', 
-                minute: '2-digit', 
-                second: '2-digit' 
+                minute: '2-digit'
             });
             
             document.getElementById('currentDateTime').textContent = `${dateStr} • ${timeStr}`;
@@ -1533,5 +1530,5 @@
             saveDataToStorage();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9684b2f60730b2ab',t:'MTc1NDA0NDYzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9684ba4f2241ea32',t:'MTc1NDA0NDkzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
