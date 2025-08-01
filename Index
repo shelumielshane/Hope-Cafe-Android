@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#d92620">
+    <title>Hope Cafe POS - Android</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiSG9wZSBDYWZlIFBPUyIsInNob3J0X25hbWUiOiJDYWZlIFBPUyIsInN0YXJ0X3VybCI6Ii4vIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJvcmllbnRhdGlvbiI6InBvcnRyYWl0IiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZiZjAiLCJ0aGVtZV9jb2xvciI6IiNkOTI2MjAiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyUzRSUzQ3JlY3Qgd2lkdGg9JzE5MicgaGVpZ2h0PScxOTInIGZpbGw9JyUyM2Q5MjYyMCcvJTNFJTNDdGV4dCB4PSc5NicgeT0nMTIwJyBmaWxsPSd3aGl0ZScgZm9udC1zaXplPSc2MCcgdGV4dC1hbmNob3I9J21pZGRsZSclM0UlRjAlOUYlOEQlOTUlM0MvdGV4dCUzRSUzQy9zdmclM0UiLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjZDkyNjIwIi8+PHRleHQgeD0iMTYiIHk9IjIyIiBmaWxsPSIjZmZmZmZmIiBmb250LXNpemU9IjE4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj7imJU8L3RleHQ+PC9zdmc+">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        
+        /* Enhanced Android optimizations */
+        input, select, button, textarea {
+            -webkit-appearance: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Touch-friendly sizing */
+        button {
+            min-height: 48px;
+            min-width: 48px;
+            touch-action: manipulation;
+        }
+        
+        /* Prevent zoom on input focus */
+        input[type="text"], input[type="number"], select {
+            font-size: 16px;
+        }
+        
+        /* GitHub Pages optimizations */
+        .github-optimized {
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+        
+        /* Enhanced PWA styles */
+        .pwa-ready {
+            display: block;
+        }
+        
+        /* Print styles */
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%;
+                background: white;
+            }
+            .no-print { display: none !important; }
+        }
+        
+        /* Status bar safe area */
+        .status-safe {
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+        
+        /* Connection indicator */
+        .connection-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            display: none;
+        }
+        
+        .connection-indicator.show {
+            display: block;
+        }
+        
+        /* Enhanced button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #d92620 0%, #b91c1c 100%);
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(217, 38, 32, 0.3);
+        }
+        
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #d92620;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 to-orange-100 min-h-screen status-safe github-optimized">
+
+    <!-- Connection Indicator -->
+    <div id="connectionIndicator" class="connection-indicator">
+        <span id="connectionText">🔄 Loading...</span>
+    </div>
+
+    <!-- Print Area (Hidden) -->
+    <div id="printArea" style="display: none;"></div>
+
+    <div class="container mx-auto px-3 py-4 max-w-md">
+        <!-- Enhanced Header -->
+        <div class="bg-white rounded-xl shadow-lg p-4 mb-4">
+            <div class="text-center mb-3">
+                <h1 class="text-2xl font-bold text-amber-800">☕ Hope Cafe POS</h1>
+                <div class="text-xs text-gray-500">GitHub Pages • Android Optimized</div>
+                <div id="appStatus" class="text-xs text-green-600 mt-1">✅ Ready</div>
+            </div>
+            
+            <div class="flex justify-center space-x-2">
+                <button id="billingTab" class="px-4 py-2 btn-primary text-white rounded-lg font-medium transition-all text-sm">Billing</button>
+                <button id="salesTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all text-sm">Sales</button>
+                <button id="menuTab" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all text-sm">Menu</button>
+            </div>
+        </div>
+
+        <!-- Enhanced Printer Status -->
+        <div id="printerStatusCard" class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="text-2xl mr-3">🖨️</div>
+                    <div>
+                        <div class="font-semibold text-blue-800 text-sm">Thermal Printer</div>
+                        <div id="printerStatusText" class="text-blue-600 text-xs">Not connected</div>
+                    </div>
+                </div>
+                <button id="quickConnectBtn" onclick="connectAndroidThermalPrinter()" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-xs">
+                    Connect
+                </button>
+            </div>
+        </div>
+
+        <!-- Sales History Section -->
+        <div id="salesSection" class="space-y-4 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📊 Sales History</h2>
+                
+                <!-- Enhanced Daily Summary -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-xl border border-green-200">
+                        <h3 class="text-xs font-medium text-green-800">Today's Revenue</h3>
+                        <p class="text-lg font-bold text-green-600">₹<span id="todaysSales">0.00</span></p>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-xl border border-blue-200">
+                        <h3 class="text-xs font-medium text-blue-800">Orders Today</h3>
+                        <p class="text-lg font-bold text-blue-600"><span id="todaysOrders">0</span></p>
+                    </div>
+                </div>
+
+                <!-- Enhanced Filter Options -->
+                <div class="mb-4">
+                    <div class="flex space-x-2">
+                        <select id="dateFilter" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm bg-white">
+                            <option value="today">📅 Today</option>
+                            <option value="week">📅 This Week</option>
+                            <option value="month">📅 This Month</option>
+                            <option value="all">📅 All Time</option>
+                        </select>
+                        <button onclick="exportSalesData()" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium text-sm">
+                            📤 Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Enhanced Sales Table -->
+                <div class="overflow-x-auto bg-gray-50 rounded-lg">
+                    <table class="w-full border-collapse text-xs">
+                        <thead class="bg-gradient-to-r from-amber-100 to-orange-100">
+                            <tr>
+                                <th class="px-2 py-3 text-left font-semibold text-amber-800">Order</th>
+                                <th class="px-2 py-3 text-left font-semibold text-amber-800">Customer</th>
+                                <th class="px-2 py-3 text-center font-semibold text-amber-800">Items</th>
+                                <th class="px-2 py-3 text-right font-semibold text-amber-800">Total</th>
+                                <th class="px-2 py-3 text-center font-semibold text-amber-800">Print</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesHistoryTable" class="bg-white">
+                            <tr>
+                                <td colspan="5" class="px-4 py-8 text-center text-gray-500">No sales data available</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Menu Management Section -->
+        <div id="menuSection" class="space-y-4 hidden">
+            <div class="bg-white rounded-xl shadow-lg p-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📋 Menu Management</h2>
+                
+                <!-- Enhanced Add Item Form -->
+                <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mb-6">
+                    <h3 class="text-lg font-medium text-gray-700 mb-3">➕ Add New Item</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="itemName" placeholder="Item Name (e.g., Cappuccino)" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                        <select id="itemCategory" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                            <option value="">Select Category</option>
+                            <option value="Beverages">☕ Beverages</option>
+                            <option value="Food">🍽️ Food</option>
+                            <option value="Snacks">🍪 Snacks</option>
+                            <option value="Desserts">🍰 Desserts</option>
+                        </select>
+                        <input type="number" id="itemPrice" placeholder="Price (₹)" step="0.01" min="0" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                        <button onclick="addMenuItem()" class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg hover:from-green-700 hover:to-green-800 transition-all font-medium">
+                            ✅ Add Item
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Enhanced Current Menu Display -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-3">📖 Current Menu</h3>
+                    <div id="menuDisplay" class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 max-h-80 overflow-y-auto border border-amber-200">
+                        <p class="text-gray-500 text-center">No items added yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Billing Section -->
+        <div id="billingSection" class="space-y-4">
+            <div class="bg-white rounded-xl shadow-lg p-4">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">🧾 New Order</h2>
+                
+                <!-- Enhanced Order Header -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-4 mb-4 border border-amber-200">
+                    <div class="grid grid-cols-1 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-amber-800 mb-2">📋 Order Number</label>
+                            <input type="text" id="orderNumber" class="w-full px-3 py-3 border border-amber-300 rounded-lg bg-white font-mono text-center font-bold" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-amber-800 mb-2">👤 Customer Name</label>
+                            <input type="text" id="customerName" placeholder="Enter customer name" class="w-full px-3 py-3 border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Add Items Section -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">🛒 Add Items</h3>
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200">
+                        <div class="space-y-3">
+                            <select id="productSelect" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                                <option value="">🔍 Select Product</option>
+                            </select>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Quantity</label>
+                                    <input type="number" id="quantity" placeholder="Qty" min="1" value="1" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white text-center font-bold">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-600 mb-1">Rate</label>
+                                    <div class="w-full px-3 py-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-center">
+                                        <span class="text-amber-700 font-bold">₹<span id="selectedRate">0.00</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="addToOrder()" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium">
+                                ➕ Add to Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Enhanced Order Items Table -->
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">📝 Order Items</h3>
+                    <div class="overflow-x-auto bg-gray-50 rounded-xl border border-gray-200">
+                        <table class="w-full border-collapse text-sm">
+                            <thead class="bg-gradient-to-r from-amber-100 to-orange-100">
+                                <tr>
+                                    <th class="px-3 py-3 text-left font-semibold text-amber-800">Product</th>
+                                    <th class="px-3 py-3 text-center font-semibold text-amber-800">Qty</th>
+                                    <th class="px-3 py-3 text-right font-semibold text-amber-800">Amount</th>
+                                    <th class="px-3 py-3 text-center font-semibold text-amber-800">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orderItemsTable" class="bg-white">
+                                <tr>
+                                    <td colspan="4" class="px-4 py-8 text-center text-gray-500">No items added to order</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Enhanced Order Summary & Actions -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">💳 Payment</label>
+                            <select id="paymentMode" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                                <option value="Cash">💵 Cash</option>
+                                <option value="Online">📱 Online</option>
+                                <option value="Card">💳 Card</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">🏪 Order Type</label>
+                            <select id="orderType" class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white">
+                                <option value="Dine In">🍽️ Dine In</option>
+                                <option value="Takeaway">📦 Takeaway</option>
+                                <option value="Delivery">🚚 Delivery</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Total Display -->
+                    <div class="bg-gradient-to-r from-amber-100 to-orange-100 p-6 rounded-xl border-2 border-amber-300">
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-amber-800 mb-2">💰 Order Total</h3>
+                            <div class="text-3xl font-bold text-amber-900">
+                                ₹<span id="totalAmount">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Action Buttons -->
+                    <div class="space-y-3">
+                        <button onclick="completeOrder()" class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 rounded-xl hover:from-green-700 hover:to-green-800 transition-all font-bold text-lg shadow-lg">
+                            ✅ Complete & Print Order
+                        </button>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="connectAndroidThermalPrinter()" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium text-sm">
+                                🖨️ Connect Printer
+                            </button>
+                            <button onclick="clearOrder()" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all font-medium text-sm">
+                                🗑️ Clear Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced global variables for GitHub Pages
+        let menuItems = [];
+        let orderItems = [];
+        let orderCounter = 1;
+        let salesHistory = [];
+        let selectedProductIndex = null;
+
+        // Enhanced Android thermal printer variables
+        let bluetoothDevice = null;
+        let bluetoothCharacteristic = null;
+        let isAndroid = /Android/i.test(navigator.userAgent);
+        let isGitHubPages = window.location.hostname.includes('github.io');
+
+        // Enhanced initialization
+        function initializeApp() {
+            try {
+                console.log('🚀 Starting Hope Cafe POS for GitHub Pages...');
+                updateConnectionIndicator('🔄 Initializing...', true);
+                
+                // Core initialization
+                generateOrderNumber();
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+                
+                // Load data
+                loadDataFromStorage();
+                
+                // Load sample menu if empty
+                if (menuItems.length === 0) {
+                    loadSampleMenu();
+                }
+                
+                // Setup functionality
+                setupTabSwitching();
+                setupProductSelect();
+                setupDateFilter();
+                setupPWAFeatures();
+                
+                // GitHub Pages specific optimizations
+                if (isGitHubPages) {
+                    console.log('✅ GitHub Pages environment detected');
+                    document.getElementById('appStatus').textContent = '✅ GitHub Pages Ready';
+                }
+                
+                updateConnectionIndicator('✅ Ready', false);
+                console.log('✅ Hope Cafe POS initialized successfully');
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Initialization error:', error);
+                updateConnectionIndicator('❌ Error', false);
+                return false;
+            }
+        }
+
+        // Enhanced connection indicator
+        function updateConnectionIndicator(text, show = true) {
+            const indicator = document.getElementById('connectionIndicator');
+            const textElement = document.getElementById('connectionText');
+            
+            textElement.textContent = text;
+            
+            if (show) {
+                indicator.classList.add('show');
+            } else {
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        // Enhanced PWA features
+        function setupPWAFeatures() {
+            try {
+                // Register service worker for GitHub Pages
+                if ('serviceWorker' in navigator && isGitHubPages) {
+                    const swCode = `
+                        const CACHE_NAME = 'hope-cafe-github-v1.0';
+                        const urlsToCache = [
+                            './',
+                            'https://cdn.tailwindcss.com',
+                            'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap'
+                        ];
+
+                        self.addEventListener('install', function(event) {
+                            event.waitUntil(
+                                caches.open(CACHE_NAME)
+                                    .then(function(cache) {
+                                        return cache.addAll(urlsToCache);
+                                    })
+                            );
+                        });
+
+                        self.addEventListener('fetch', function(event) {
+                            event.respondWith(
+                                caches.match(event.request)
+                                    .then(function(response) {
+                                        if (response) {
+                                            return response;
+                                        }
+                                        return fetch(event.request);
+                                    }
+                                )
+                            );
+                        });
+                    `;
+
+                    const blob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(blob);
+
+                    navigator.serviceWorker.register(swUrl)
+                        .then(() => console.log('✅ Service Worker registered'))
+                        .catch(() => console.log('⚠️ Service Worker registration failed'));
+                }
+
+                // Install prompt for PWA
+                let deferredPrompt;
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    
+                    // Show install button after 5 seconds
+                    setTimeout(() => {
+                        if (deferredPrompt && !window.matchMedia('(display-mode: standalone)').matches) {
+                            showInstallPrompt();
+                        }
+                    }, 5000);
+                });
+
+                console.log('✅ PWA features setup complete');
+            } catch (error) {
+                console.log('⚠️ PWA setup failed:', error);
+            }
+        }
+
+        function showInstallPrompt() {
+            const installBanner = document.createElement('div');
+            installBanner.className = 'fixed bottom-4 left-4 right-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4 rounded-xl shadow-lg z-50';
+            installBanner.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3">📱</span>
+                        <div>
+                            <div class="font-semibold text-sm">Install Hope Cafe POS</div>
+                            <div class="text-xs opacity-90">Add to home screen for better experience</div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="installPWA()" class="bg-white text-amber-600 px-3 py-1 rounded-lg font-medium text-sm">Install</button>
+                        <button onclick="dismissInstall()" class="text-white opacity-75 text-sm">✕</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(installBanner);
+            window.installBanner = installBanner;
+        }
+
+        function installPWA() {
+            if (window.deferredPrompt) {
+                window.deferredPrompt.prompt();
+                window.deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('✅ PWA installed');
+                    }
+                    window.deferredPrompt = null;
+                    dismissInstall();
+                });
+            }
+        }
+
+        function dismissInstall() {
+            if (window.installBanner) {
+                window.installBanner.remove();
+            }
+        }
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Enhanced tab switching
+        function setupTabSwitching() {
+            try {
+                document.getElementById('billingTab').addEventListener('click', showBillingSection);
+                document.getElementById('salesTab').addEventListener('click', showSalesSection);
+                document.getElementById('menuTab').addEventListener('click', showMenuSection);
+                console.log('✅ Tab switching setup complete');
+            } catch (error) {
+                console.error('❌ Tab switching setup error:', error);
+            }
+        }
+
+        function showBillingSection() {
+            document.getElementById('billingSection').classList.remove('hidden');
+            document.getElementById('salesSection').classList.add('hidden');
+            document.getElementById('menuSection').classList.add('hidden');
+            setActiveTab('billingTab');
+        }
+
+        function showSalesSection() {
+            document.getElementById('salesSection').classList.remove('hidden');
+            document.getElementById('billingSection').classList.add('hidden');
+            document.getElementById('menuSection').classList.add('hidden');
+            setActiveTab('salesTab');
+            updateSalesDisplay();
+        }
+
+        function showMenuSection() {
+            document.getElementById('menuSection').classList.remove('hidden');
+            document.getElementById('billingSection').classList.add('hidden');
+            document.getElementById('salesSection').classList.add('hidden');
+            setActiveTab('menuTab');
+        }
+
+        function setActiveTab(activeTabId) {
+            const tabs = ['billingTab', 'salesTab', 'menuTab'];
+            tabs.forEach(tabId => {
+                const tab = document.getElementById(tabId);
+                if (tabId === activeTabId) {
+                    tab.className = 'px-4 py-2 btn-primary text-white rounded-lg font-medium transition-all text-sm';
+                } else {
+                    tab.className = 'px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all text-sm';
+                }
+            });
+        }
+
+        // Enhanced data storage
+        function saveDataToStorage() {
+            try {
+                localStorage.setItem('hopeMenuItems', JSON.stringify(menuItems));
+                localStorage.setItem('hopeSalesHistory', JSON.stringify(salesHistory));
+                localStorage.setItem('hopeOrderCounter', orderCounter.toString());
+                console.log('✅ Data saved to localStorage');
+            } catch (error) {
+                console.error('❌ Failed to save data:', error);
+            }
+        }
+
+        function loadDataFromStorage() {
+            try {
+                const savedMenu = localStorage.getItem('hopeMenuItems');
+                const savedSales = localStorage.getItem('hopeSalesHistory');
+                const savedCounter = localStorage.getItem('hopeOrderCounter');
+
+                if (savedMenu) {
+                    menuItems = JSON.parse(savedMenu);
+                    updateMenuDisplay();
+                    updateProductSelect();
+                }
+
+                if (savedSales) {
+                    salesHistory = JSON.parse(savedSales);
+                }
+
+                if (savedCounter) {
+                    orderCounter = parseInt(savedCounter);
+                }
+                
+                console.log('✅ Data loaded from localStorage');
+            } catch (error) {
+                console.error('❌ Failed to load data:', error);
+            }
+        }
+
+        // Enhanced sample menu
+        function loadSampleMenu() {
+            const sampleItems = [
+                { name: 'Espresso', category: 'Beverages', price: 80 },
+                { name: 'Cappuccino', category: 'Beverages', price: 120 },
+                { name: 'Latte', category: 'Beverages', price: 140 },
+                { name: 'Cold Coffee', category: 'Beverages', price: 160 },
+                { name: 'Masala Tea', category: 'Beverages', price: 60 },
+                { name: 'Green Tea', category: 'Beverages', price: 70 },
+                { name: 'Club Sandwich', category: 'Food', price: 180 },
+                { name: 'Veg Burger', category: 'Food', price: 220 },
+                { name: 'Pasta Arrabiata', category: 'Food', price: 280 },
+                { name: 'Margherita Pizza', category: 'Food', price: 350 },
+                { name: 'Chocolate Muffin', category: 'Snacks', price: 100 },
+                { name: 'Croissant', category: 'Snacks', price: 120 },
+                { name: 'Cheesecake', category: 'Desserts', price: 180 },
+                { name: 'Brownie', category: 'Desserts', price: 150 }
+            ];
+
+            menuItems = [...sampleItems];
+            updateMenuDisplay();
+            updateProductSelect();
+            saveDataToStorage();
+            console.log('✅ Sample menu loaded');
+        }
+
+        // Enhanced menu management
+        function addMenuItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const category = document.getElementById('itemCategory').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+
+            if (!name || !category || !price || price <= 0) {
+                alert('❌ Please fill all fields with valid values');
+                return;
+            }
+
+            // Check for duplicates
+            if (menuItems.some(item => item.name.toLowerCase() === name.toLowerCase())) {
+                alert('❌ Item already exists in menu');
+                return;
+            }
+
+            const newItem = { name, category, price };
+            menuItems.push(newItem);
+            
+            updateMenuDisplay();
+            updateProductSelect();
+            saveDataToStorage();
+            
+            // Clear form
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemCategory').value = '';
+            document.getElementById('itemPrice').value = '';
+            
+            // Success feedback
+            updateConnectionIndicator('✅ Item added', true);
+        }
+
+        function updateMenuDisplay() {
+            const menuDisplay = document.getElementById('menuDisplay');
+            
+            if (menuItems.length === 0) {
+                menuDisplay.innerHTML = '<p class="text-gray-500 text-center py-8">No items added yet</p>';
+                return;
+            }
+
+            // Group by category
+            const categories = [...new Set(menuItems.map(item => item.category))];
+            let html = '';
+            
+            categories.forEach(category => {
+                const categoryItems = menuItems.filter(item => item.category === category);
+                const categoryIcon = getCategoryIcon(category);
+                
+                html += `<div class="mb-6">
+                    <h4 class="font-bold text-amber-700 mb-3 text-sm border-b border-amber-200 pb-2">
+                        ${categoryIcon} ${category} (${categoryItems.length})
+                    </h4>`;
+                
+                categoryItems.forEach((item, index) => {
+                    const globalIndex = menuItems.indexOf(item);
+                    html += `<div class="flex justify-between items-center py-2 px-3 hover:bg-white rounded-lg transition-colors">
+                        <div>
+                            <span class="font-medium text-gray-800">${item.name}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-amber-600">₹${item.price}</span>
+                            <button onclick="removeMenuItem(${globalIndex})" class="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-1 transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>`;
+                });
+                
+                html += '</div>';
+            });
+
+            menuDisplay.innerHTML = html;
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'Beverages': '☕',
+                'Food': '🍽️',
+                'Snacks': '🍪',
+                'Desserts': '🍰'
+            };
+            return icons[category] || '📦';
+        }
+
+        function removeMenuItem(index) {
+            if (confirm('❓ Remove this item from menu?')) {
+                const removedItem = menuItems[index];
+                menuItems.splice(index, 1);
+                updateMenuDisplay();
+                updateProductSelect();
+                saveDataToStorage();
+                updateConnectionIndicator(`✅ ${removedItem.name} removed`, true);
+            }
+        }
+
+        function updateProductSelect() {
+            const select = document.getElementById('productSelect');
+            select.innerHTML = '<option value="">🔍 Select Product</option>';
+            
+            // Group by category for better UX
+            const categories = [...new Set(menuItems.map(item => item.category))];
+            
+            categories.forEach(category => {
+                const categoryItems = menuItems.filter(item => item.category === category);
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = `${getCategoryIcon(category)} ${category}`;
+                
+                categoryItems.forEach((item, index) => {
+                    const globalIndex = menuItems.indexOf(item);
+                    const option = document.createElement('option');
+                    option.value = globalIndex;
+                    option.textContent = `${item.name} - ₹${item.price}`;
+                    optgroup.appendChild(option);
+                });
+                
+                select.appendChild(optgroup);
+            });
+        }
+
+        // Enhanced billing functions
+        function generateOrderNumber() {
+            const today = new Date();
+            const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+            const orderNum = `HC${dateStr}${String(orderCounter).padStart(3, '0')}`;
+            document.getElementById('orderNumber').value = orderNum;
+        }
+
+        function updateDateTime() {
+            // Keep for compatibility
+        }
+
+        function setupProductSelect() {
+            try {
+                document.getElementById('productSelect').addEventListener('change', function() {
+                    const selectedIndex = this.value;
+                    const rateSpan = document.getElementById('selectedRate');
+                    
+                    if (selectedIndex === '') {
+                        rateSpan.textContent = '0.00';
+                        selectedProductIndex = null;
+                    } else {
+                        selectedProductIndex = parseInt(selectedIndex);
+                        const selectedItem = menuItems[selectedIndex];
+                        rateSpan.textContent = selectedItem.price.toFixed(2);
+                    }
+                });
+                console.log('✅ Product select setup complete');
+            } catch (error) {
+                console.error('❌ Product select setup error:', error);
+            }
+        }
+
+        function addToOrder() {
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (selectedProductIndex === null || !quantity || quantity <= 0) {
+                alert('❌ Please select a product and enter valid quantity');
+                return;
+            }
+
+            const product = menuItems[selectedProductIndex];
+            const amount = product.price * quantity;
+
+            // Check if item already exists in order
+            const existingItemIndex = orderItems.findIndex(item => item.name === product.name);
+            
+            if (existingItemIndex !== -1) {
+                // Update existing item
+                orderItems[existingItemIndex].quantity += quantity;
+                orderItems[existingItemIndex].amount = orderItems[existingItemIndex].quantity * orderItems[existingItemIndex].rate;
+            } else {
+                // Add new item
+                const orderItem = {
+                    name: product.name,
+                    quantity: quantity,
+                    rate: product.price,
+                    amount: amount
+                };
+                orderItems.push(orderItem);
+            }
+
+            updateOrderTable();
+            updateOrderSummary();
+
+            // Reset form
+            document.getElementById('productSelect').value = '';
+            document.getElementById('quantity').value = '1';
+            document.getElementById('selectedRate').textContent = '0.00';
+            selectedProductIndex = null;
+            
+            // Success feedback
+            updateConnectionIndicator(`✅ ${product.name} added`, true);
+        }
+
+        function updateOrderTable() {
+            const tbody = document.getElementById('orderItemsTable');
+            
+            if (orderItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">No items added to order</td></tr>';
+                return;
+            }
+
+            let html = '';
+            orderItems.forEach((item, index) => {
+                html += `
+                    <tr class="hover:bg-amber-50 transition-colors">
+                        <td class="px-3 py-3 border-b border-gray-200">
+                            <div class="font-medium text-gray-800">${item.name}</div>
+                            <div class="text-xs text-gray-500">₹${item.rate} each</div>
+                        </td>
+                        <td class="px-3 py-3 text-center border-b border-gray-200">
+                            <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-sm font-bold">${item.quantity}</span>
+                        </td>
+                        <td class="px-3 py-3 text-right border-b border-gray-200">
+                            <span class="font-bold text-green-600">₹${item.amount.toFixed(2)}</span>
+                        </td>
+                        <td class="px-3 py-3 text-center border-b border-gray-200">
+                            <button onclick="removeOrderItem(${index})" class="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-2 transition-colors">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h8a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zM8 8a1 1 0 012 0v3a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v3a1 1 0 11-2 0V8z" clip-rule="evenodd"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function removeOrderItem(index) {
+            const removedItem = orderItems[index];
+            orderItems.splice(index, 1);
+            updateOrderTable();
+            updateOrderSummary();
+            updateConnectionIndicator(`✅ ${removedItem.name} removed`, true);
+        }
+
+        function updateOrderSummary() {
+            const subtotal = orderItems.reduce((sum, item) => sum + item.amount, 0);
+            document.getElementById('totalAmount').textContent = subtotal.toFixed(2);
+        }
+
+        // Enhanced Android thermal printer connection
+        async function connectAndroidThermalPrinter() {
+            try {
+                updatePrinterStatus('🔍 Searching for printers...');
+                updateConnectionIndicator('🔍 Searching printers...', true);
+
+                if (!navigator.bluetooth) {
+                    throw new Error('Bluetooth not supported on this device');
+                }
+
+                // Enhanced device filters for better compatibility
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    filters: [
+                        { namePrefix: 'MTP-' },
+                        { namePrefix: 'POS-' },
+                        { namePrefix: 'Thermal' },
+                        { namePrefix: 'BlueTooth Printer' },
+                        { namePrefix: 'Printer' },
+                        { namePrefix: 'BT-' },
+                        { namePrefix: 'TP-' },
+                        { namePrefix: 'SPP-' },
+                        { namePrefix: 'EPSON' },
+                        { namePrefix: 'Star' }
+                    ],
+                    optionalServices: [
+                        '000018f0-0000-1000-8000-00805f9b34fb',
+                        '0000ff00-0000-1000-8000-00805f9b34fb',
+                        '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+                        '0000ffe0-0000-1000-8000-00805f9b34fb',
+                        '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+                    ]
+                });
+
+                updatePrinterStatus(`🔗 Connecting to ${bluetoothDevice.name}...`);
+                
+                const server = await bluetoothDevice.gatt.connect();
+                
+                // Try multiple service UUIDs for maximum compatibility
+                let service;
+                const serviceUUIDs = [
+                    '000018f0-0000-1000-8000-00805f9b34fb',
+                    '0000ff00-0000-1000-8000-00805f9b34fb', 
+                    '49535343-fe7d-4ae5-8fa9-9fafd205e455',
+                    '0000ffe0-0000-1000-8000-00805f9b34fb',
+                    '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+                ];
+
+                for (const uuid of serviceUUIDs) {
+                    try {
+                        service = await server.getPrimaryService(uuid);
+                        console.log(`✅ Connected using service: ${uuid}`);
+                        break;
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (!service) {
+                    throw new Error('Could not find compatible printer service');
+                }
+
+                // Get writable characteristic
+                const characteristics = await service.getCharacteristics();
+                bluetoothCharacteristic = characteristics.find(c => 
+                    c.properties.write || c.properties.writeWithoutResponse
+                );
+
+                if (!bluetoothCharacteristic) {
+                    throw new Error('Could not find writable characteristic');
+                }
+
+                updatePrinterStatus(`✅ Connected: ${bluetoothDevice.name}`);
+                updateConnectionIndicator('✅ Printer connected', true);
+                
+                // Update UI
+                document.getElementById('quickConnectBtn').textContent = 'Connected';
+                document.getElementById('quickConnectBtn').className = 'bg-green-600 text-white px-3 py-2 rounded-lg font-medium text-xs';
+                
+                // Test print
+                await testPrint();
+                
+                alert(`✅ Thermal printer connected successfully!\n\n🖨️ Printer: ${bluetoothDevice.name}\n\n✅ Test print completed\n\nYou can now print receipts directly to your thermal printer.`);
+                return true;
+
+            } catch (error) {
+                console.error('❌ Bluetooth connection failed:', error);
+                updatePrinterStatus('❌ Connection failed');
+                updateConnectionIndicator('❌ Connection failed', true);
+                
+                // Reset UI
+                document.getElementById('quickConnectBtn').textContent = 'Connect';
+                document.getElementById('quickConnectBtn').className = 'bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-xs';
+                
+                let errorMessage = '❌ Failed to connect to thermal printer:\n\n';
+                
+                if (error.message.includes('not supported')) {
+                    errorMessage += '• Bluetooth not supported on this device\n• Try using Chrome browser';
+                } else if (error.message.includes('User cancelled')) {
+                    errorMessage += '• Connection cancelled by user';
+                } else {
+                    errorMessage += `• ${error.message}`;
+                }
+                
+                errorMessage += '\n\n🔧 Troubleshooting:\n• Ensure printer is turned ON\n• Put printer in pairing mode\n• Make sure printer is not connected to other devices\n• Try turning Bluetooth off and on\n• Clear browser cache and try again';
+                
+                alert(errorMessage);
+                return false;
+            }
+        }
+
+        function updatePrinterStatus(status) {
+            document.getElementById('printerStatusText').textContent = status;
+        }
+
+        // Enhanced test print
+        async function testPrint() {
+            try {
+                const testData = generateESCPOSCommands({
+                    orderNumber: 'TEST001',
+                    customerName: 'Test Customer',
+                    orderType: 'Test Connection',
+                    paymentMode: 'Test',
+                    items: [{ name: 'Connection Test', quantity: 1, rate: 0, amount: 0 }],
+                    total: 0
+                });
+
+                await sendToPrinter(testData);
+                console.log('✅ Test print successful');
+            } catch (error) {
+                console.error('❌ Test print failed:', error);
+                throw error;
+            }
+        }
+
+        // Enhanced ESC/POS command generation
+        function generateESCPOSCommands(orderData = null) {
+            const ESC = 0x1B;
+            const GS = 0x1D;
+            const LF = 0x0A;
+            const CR = 0x0D;
+
+            let commands = [];
+
+            // Initialize printer
+            commands.push(ESC, 0x40); // Initialize
+            commands.push(ESC, 0x61, 0x01); // Center alignment
+
+            // Header with enhanced formatting
+            commands.push(ESC, 0x21, 0x30); // Double height and width
+            commands.push(...stringToBytes('HOPE CAFE'));
+            commands.push(LF, LF);
+
+            commands.push(ESC, 0x21, 0x00); // Normal size
+            commands.push(...stringToBytes('Premium Coffee & Food'));
+            commands.push(LF);
+            commands.push(...stringToBytes('123 Main Street, Your City'));
+            commands.push(LF);
+            commands.push(...stringToBytes('Phone: +91 98765 43210'));
+            commands.push(LF);
+            commands.push(...stringToBytes('Email: info@hopecafe.com'));
+            commands.push(LF, LF);
+
+            // Use current order data or provided order data
+            const currentOrder = orderData || {
+                orderNumber: document.getElementById('orderNumber').value,
+                customerName: document.getElementById('customerName').value || 'Walk-in Customer',
+                orderType: document.getElementById('orderType').value,
+                paymentMode: document.getElementById('paymentMode').value,
+                items: orderItems,
+                total: parseFloat(document.getElementById('totalAmount').textContent || '0')
+            };
+
+            // Separator line
+            commands.push(ESC, 0x61, 0x00); // Left alignment
+            commands.push(...stringToBytes('================================'));
+            commands.push(LF);
+
+            // Order details with enhanced formatting
+            commands.push(ESC, 0x21, 0x10); // Double width
+            commands.push(...stringToBytes(`ORDER: ${currentOrder.orderNumber}`));
+            commands.push(LF);
+            commands.push(ESC, 0x21, 0x00); // Normal size
+            
+            commands.push(...stringToBytes(`Customer: ${currentOrder.customerName}`));
+            commands.push(LF);
+            commands.push(...stringToBytes(`Type: ${currentOrder.orderType}`));
+            commands.push(LF);
+            commands.push(...stringToBytes(`Payment: ${currentOrder.paymentMode}`));
+            commands.push(LF);
+            commands.push(...stringToBytes(`Date: ${new Date().toLocaleDateString('en-IN')}`));
+            commands.push(LF);
+            commands.push(...stringToBytes(`Time: ${new Date().toLocaleTimeString('en-IN')}`));
+            commands.push(LF, LF);
+
+            // Items header
+            commands.push(...stringToBytes('ITEMS ORDERED:'));
+            commands.push(LF);
+            commands.push(...stringToBytes('================================'));
+            commands.push(LF);
+
+            // Items with better formatting
+            let totalItems = 0;
+            currentOrder.items.forEach(item => {
+                totalItems += item.quantity;
+                
+                // Item name
+                commands.push(...stringToBytes(`${item.name}`));
+                commands.push(LF);
+                
+                // Quantity, rate, and amount
+                const itemLine = `  ${item.quantity} x Rs.${item.rate.toFixed(2)} = Rs.${item.amount.toFixed(2)}`;
+                commands.push(...stringToBytes(itemLine));
+                commands.push(LF);
+            });
+
+            // Summary
+            commands.push(...stringToBytes('================================'));
+            commands.push(LF);
+            commands.push(...stringToBytes(`Total Items: ${totalItems}`));
+            commands.push(LF, LF);
+
+            // Total amount with emphasis
+            commands.push(ESC, 0x21, 0x30); // Double height and width
+            commands.push(ESC, 0x61, 0x01); // Center alignment
+            commands.push(...stringToBytes(`TOTAL: Rs.${currentOrder.total.toFixed(2)}`));
+            commands.push(LF, LF);
+
+            // Footer
+            commands.push(ESC, 0x21, 0x00); // Normal size
+            commands.push(...stringToBytes('Thank you for visiting!'));
+            commands.push(LF);
+            commands.push(...stringToBytes('Please visit again'));
+            commands.push(LF, LF);
+            
+            // QR code placeholder (if supported)
+            commands.push(...stringToBytes('Scan for feedback:'));
+            commands.push(LF);
+            commands.push(...stringToBytes('hopecafe.com/feedback'));
+            commands.push(LF, LF, LF);
+
+            // Cut paper
+            commands.push(GS, 0x56, 0x00);
+
+            return new Uint8Array(commands);
+        }
+
+        function stringToBytes(str) {
+            return Array.from(str, char => char.charCodeAt(0));
+        }
+
+        // Enhanced printer communication
+        async function sendToPrinter(data) {
+            if (!bluetoothCharacteristic) {
+                throw new Error('Printer not connected');
+            }
+
+            try {
+                // Send data in optimized chunks
+                const chunkSize = 20;
+                for (let i = 0; i < data.length; i += chunkSize) {
+                    const chunk = data.slice(i, i + chunkSize);
+                    
+                    if (bluetoothCharacteristic.properties.writeWithoutResponse) {
+                        await bluetoothCharacteristic.writeValueWithoutResponse(chunk);
+                    } else {
+                        await bluetoothCharacteristic.writeValue(chunk);
+                    }
+                    
+                    // Small delay for printer processing
+                    await new Promise(resolve => setTimeout(resolve, 30));
+                }
+                return true;
+            } catch (error) {
+                console.error('❌ Print failed:', error);
+                throw error;
+            }
+        }
+
+        // Enhanced order completion
+        function completeOrder() {
+            const customerName = document.getElementById('customerName').value.trim() || 'Walk-in Customer';
+            const paymentMode = document.getElementById('paymentMode').value;
+            const orderType = document.getElementById('orderType').value;
+
+            if (orderItems.length === 0) {
+                alert('❌ Please add items to the order');
+                return;
+            }
+
+            // Create order data
+            const orderData = {
+                orderNumber: document.getElementById('orderNumber').value,
+                customerName: customerName,
+                dateTime: new Date().toLocaleString('en-IN'),
+                orderType: orderType,
+                items: [...orderItems],
+                total: parseFloat(document.getElementById('totalAmount').textContent),
+                paymentMode: paymentMode,
+                timestamp: new Date().getTime()
+            };
+
+            // Save to sales history
+            salesHistory.push(orderData);
+            saveDataToStorage();
+
+            // Show completion message and print options
+            showEnhancedPrintOptions(orderData);
+
+            // Reset for next order
+            orderCounter++;
+            clearOrder();
+            generateOrderNumber();
+            
+            updateConnectionIndicator('✅ Order completed', true);
+        }
+
+        function showEnhancedPrintOptions(orderData) {
+            if (bluetoothCharacteristic) {
+                // Thermal printer is connected
+                const printChoice = confirm(`✅ Order completed successfully!\n\n📋 Order: ${orderData.orderNumber}\n👤 Customer: ${orderData.customerName}\n💰 Total: ₹${orderData.total.toFixed(2)}\n\n🖨️ Print receipt to thermal printer?\n\n• OK = Print receipt\n• Cancel = Skip printing\n\nYou can reprint from Sales History anytime.`);
+                
+                if (printChoice) {
+                    printToEnhancedThermal(orderData);
+                }
+            } else {
+                // No thermal printer connected
+                const connectChoice = confirm(`✅ Order completed successfully!\n\n📋 Order: ${orderData.orderNumber}\n👤 Customer: ${orderData.customerName}\n💰 Total: ₹${orderData.total.toFixed(2)}\n\n🖨️ No thermal printer connected.\n\n• OK = Connect printer and print\n• Cancel = Skip printing\n\n💡 Tip: Connect your Shreyans thermal printer for instant receipt printing.`);
+                
+                if (connectChoice) {
+                    connectAndroidThermalPrinter().then(connected => {
+                        if (connected) {
+                            printToEnhancedThermal(orderData);
+                        }
+                    });
+                }
+            }
+        }
+
+        async function printToEnhancedThermal(orderData) {
+            try {
+                updatePrinterStatus('🖨️ Printing receipt...');
+                updateConnectionIndicator('🖨️ Printing...', true);
+                
+                const escPos = generateESCPOSCommands(orderData);
+                await sendToPrinter(escPos);
+                
+                updatePrinterStatus(`✅ Connected: ${bluetoothDevice.name}`);
+                updateConnectionIndicator('✅ Receipt printed', true);
+                
+                // Success feedback
+                setTimeout(() => {
+                    alert(`✅ Receipt printed successfully!\n\n📋 Order: ${orderData.orderNumber}\n🖨️ Printer: ${bluetoothDevice.name}\n\n✅ Customer can collect their receipt.`);
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Printing failed:', error);
+                updatePrinterStatus('❌ Print failed');
+                updateConnectionIndicator('❌ Print failed', true);
+                
+                alert(`❌ Printing failed: ${error.message}\n\n🔧 Troubleshooting:\n• Check printer connection\n• Ensure printer has paper\n• Try reconnecting printer\n• Check printer power\n\nYou can reprint from Sales History.`);
+            }
+        }
+
+        // Enhanced sales history
+        function updateSalesDisplay() {
+            const filter = document.getElementById('dateFilter').value;
+            const filteredSales = filterSalesByDate(filter);
+            
+            updateSalesSummary(filteredSales);
+            updateSalesTable(filteredSales);
+        }
+
+        function filterSalesByDate(filter) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            return salesHistory.filter(sale => {
+                const saleDate = new Date(sale.timestamp);
+                
+                switch(filter) {
+                    case 'today':
+                        return saleDate >= today;
+                    case 'week':
+                        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        return saleDate >= weekAgo;
+                    case 'month':
+                        const monthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+                        return saleDate >= monthAgo;
+                    default:
+                        return true;
+                }
+            });
+        }
+
+        function updateSalesSummary(filteredSales) {
+            const totalSales = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
+            const totalOrders = filteredSales.length;
+
+            document.getElementById('todaysSales').textContent = totalSales.toFixed(2);
+            document.getElementById('todaysOrders').textContent = totalOrders;
+        }
+
+        function updateSalesTable(filteredSales) {
+            const tbody = document.getElementById('salesHistoryTable');
+            
+            if (filteredSales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">No sales data available for selected period</td></tr>';
+                return;
+            }
+
+            let html = '';
+            filteredSales.reverse().forEach((sale, index) => {
+                const itemCount = sale.items.reduce((sum, item) => sum + item.quantity, 0);
+                const saleDate = new Date(sale.timestamp);
+                const timeStr = saleDate.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                
+                html += `
+                    <tr class="hover:bg-amber-50 transition-colors">
+                        <td class="px-2 py-3 border-b border-gray-100">
+                            <div class="font-medium text-gray-800 text-xs">${sale.orderNumber}</div>
+                            <div class="text-xs text-gray-500">${timeStr}</div>
+                        </td>
+                        <td class="px-2 py-3 border-b border-gray-100">
+                            <div class="font-medium text-gray-800 text-xs">${sale.customerName}</div>
+                            <div class="text-xs text-gray-500">${sale.orderType}</div>
+                        </td>
+                        <td class="px-2 py-3 text-center border-b border-gray-100">
+                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">${itemCount}</span>
+                        </td>
+                        <td class="px-2 py-3 text-right border-b border-gray-100">
+                            <div class="font-bold text-green-600 text-xs">₹${sale.total.toFixed(2)}</div>
+                            <div class="text-xs text-gray-500">${sale.paymentMode}</div>
+                        </td>
+                        <td class="px-2 py-3 text-center border-b border-gray-100">
+                            <button onclick="reprintToEnhancedThermal(${salesHistory.indexOf(sale)})" class="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-2 py-1 rounded-lg text-xs hover:from-blue-700 hover:to-blue-800 transition-all font-medium">
+                                🖨️ Print
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function reprintToEnhancedThermal(saleIndex) {
+            const sale = salesHistory[saleIndex];
+            if (!sale) {
+                alert('❌ Receipt not found');
+                return;
+            }
+
+            if (!bluetoothCharacteristic) {
+                const connectChoice = confirm(`❌ Thermal printer not connected!\n\n📋 Order: ${sale.orderNumber}\n👤 Customer: ${sale.customerName}\n💰 Total: ₹${sale.total.toFixed(2)}\n\n🔗 Connect printer now?`);
+                if (connectChoice) {
+                    connectAndroidThermalPrinter().then(connected => {
+                        if (connected) {
+                            printToEnhancedThermal(sale);
+                        }
+                    });
+                }
+                return;
+            }
+
+            const confirmPrint = confirm(`🖨️ Reprint receipt?\n\n📋 Order: ${sale.orderNumber}\n👤 Customer: ${sale.customerName}\n💰 Total: ₹${sale.total.toFixed(2)}\n📅 Date: ${new Date(sale.timestamp).toLocaleDateString('en-IN')}\n\n• OK = Print receipt\n• Cancel = Cancel`);
+            
+            if (confirmPrint) {
+                printToEnhancedThermal(sale);
+            }
+        }
+
+        // Enhanced export function
+        function exportSalesData() {
+            const filter = document.getElementById('dateFilter').value;
+            const filteredSales = filterSalesByDate(filter);
+            
+            const exportData = {
+                cafeInfo: {
+                    name: "Hope Cafe",
+                    version: "GitHub Pages Android v1.0",
+                    exportDate: new Date().toISOString(),
+                    filterApplied: filter
+                },
+                summary: {
+                    totalSales: filteredSales.reduce((sum, sale) => sum + sale.total, 0),
+                    totalOrders: filteredSales.length,
+                    dateRange: {
+                        from: filteredSales.length > 0 ? new Date(Math.min(...filteredSales.map(s => s.timestamp))).toISOString() : null,
+                        to: filteredSales.length > 0 ? new Date(Math.max(...filteredSales.map(s => s.timestamp))).toISOString() : null
+                    }
+                },
+                salesHistory: filteredSales,
+                menuItems: menuItems,
+                orderCounter: orderCounter
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `hope-cafe-${filter}-backup-${new Date().toISOString().split('T')[0]}.json`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            updateConnectionIndicator('✅ Data exported', true);
+            alert(`✅ Sales data exported successfully!\n\n📊 Filter: ${filter}\n📋 Orders: ${filteredSales.length}\n💰 Total: ₹${exportData.summary.totalSales.toFixed(2)}\n\n📁 File saved to Downloads folder.\n💾 Keep this backup safe for data recovery.`);
+        }
+
+        function setupDateFilter() {
+            try {
+                document.getElementById('dateFilter').addEventListener('change', updateSalesDisplay);
+                console.log('✅ Date filter setup complete');
+            } catch (error) {
+                console.error('❌ Date filter setup error:', error);
+            }
+        }
+
+        function clearOrder() {
+            orderItems = [];
+            document.getElementById('customerName').value = '';
+            document.getElementById('orderType').value = 'Dine In';
+            document.getElementById('paymentMode').value = 'Cash';
+            document.getElementById('productSelect').value = '';
+            document.getElementById('quantity').value = '1';
+            document.getElementById('selectedRate').textContent = '0.00';
+            selectedProductIndex = null;
+            updateOrderTable();
+            updateOrderSummary();
+        }
+
+        // Handle page visibility for better performance
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden, save data
+                saveDataToStorage();
+            } else {
+                // Page is visible, refresh if needed
+                updateSalesDisplay();
+            }
+        });
+
+        // Handle beforeunload for data safety
+        window.addEventListener('beforeunload', function(e) {
+            saveDataToStorage();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968492d61124c462',t:'MTc1NDA0MzMxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
