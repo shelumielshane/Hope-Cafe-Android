@@ -924,8 +924,85 @@
             document.getElementById('totalAmount').textContent = subtotal.toFixed(2);
         }
 
-        // Enhanced Android thermal printer connection
+        // Enhanced Android thermal printer connection with multiple methods
         async function connectAndroidThermalPrinter() {
+            // Show connection options dialog
+            const connectionMethod = await showConnectionOptions();
+            
+            if (connectionMethod === 'bluetooth') {
+                return await connectViaBluetooth();
+            } else if (connectionMethod === 'app') {
+                return await connectViaApp();
+            } else if (connectionMethod === 'manual') {
+                return await showManualInstructions();
+            }
+            
+            return false;
+        }
+
+        function showConnectionOptions() {
+            return new Promise((resolve) => {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-xl p-6 max-w-md w-full">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">🖨️ Connect Thermal Printer</h3>
+                        <p class="text-gray-600 mb-6">Choose your preferred connection method:</p>
+                        
+                        <div class="space-y-3">
+                            <button onclick="selectConnection('bluetooth')" class="w-full bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-all text-left">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">📶</span>
+                                    <div>
+                                        <div class="font-semibold">Direct Bluetooth</div>
+                                        <div class="text-sm opacity-90">Connect directly via browser</div>
+                                    </div>
+                                </div>
+                            </button>
+                            
+                            <button onclick="selectConnection('app')" class="w-full bg-green-600 text-white p-4 rounded-lg hover:bg-green-700 transition-all text-left">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">📱</span>
+                                    <div>
+                                        <div class="font-semibold">Via Printer App</div>
+                                        <div class="text-sm opacity-90">Use your printer's mobile app</div>
+                                    </div>
+                                </div>
+                            </button>
+                            
+                            <button onclick="selectConnection('manual')" class="w-full bg-amber-600 text-white p-4 rounded-lg hover:bg-amber-700 transition-all text-left">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">📋</span>
+                                    <div>
+                                        <div class="font-semibold">Manual Setup</div>
+                                        <div class="text-sm opacity-90">Step-by-step instructions</div>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+                        
+                        <button onclick="closeConnectionModal()" class="w-full mt-4 bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition-all">
+                            Cancel
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                window.connectionModal = modal;
+                
+                window.selectConnection = (method) => {
+                    document.body.removeChild(modal);
+                    resolve(method);
+                };
+                
+                window.closeConnectionModal = () => {
+                    document.body.removeChild(modal);
+                    resolve(null);
+                };
+            });
+        }
+
+        async function connectViaBluetooth() {
             try {
                 updatePrinterStatus('🔍 Searching for printers...');
                 updateConnectionIndicator('🔍 Searching printers...', true);
@@ -934,7 +1011,7 @@
                     throw new Error('Bluetooth not supported on this device');
                 }
 
-                // Enhanced device filters for better compatibility
+                // Enhanced device filters with more common printer names
                 bluetoothDevice = await navigator.bluetooth.requestDevice({
                     filters: [
                         { namePrefix: 'MTP-' },
@@ -946,14 +1023,23 @@
                         { namePrefix: 'TP-' },
                         { namePrefix: 'SPP-' },
                         { namePrefix: 'EPSON' },
-                        { namePrefix: 'Star' }
+                        { namePrefix: 'Star' },
+                        { namePrefix: 'RPP' },
+                        { namePrefix: 'PTP' },
+                        { namePrefix: 'PT-' },
+                        { namePrefix: 'Xprinter' },
+                        { namePrefix: 'GOOJPRT' },
+                        { namePrefix: 'MUNBYN' },
+                        { namePrefix: 'iDPRT' },
+                        { namePrefix: 'HPRT' }
                     ],
                     optionalServices: [
                         '000018f0-0000-1000-8000-00805f9b34fb',
                         '0000ff00-0000-1000-8000-00805f9b34fb',
                         '49535343-fe7d-4ae5-8fa9-9fafd205e455',
                         '0000ffe0-0000-1000-8000-00805f9b34fb',
-                        '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+                        '6e400001-b5a3-f393-e0a9-e50e24dcca9e',
+                        '0000180f-0000-1000-8000-00805f9b34fb'
                     ]
                 });
 
@@ -1017,21 +1103,188 @@
                 document.getElementById('quickConnectBtn').textContent = 'Connect';
                 document.getElementById('quickConnectBtn').className = 'bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-xs';
                 
-                let errorMessage = '❌ Failed to connect to thermal printer:\n\n';
-                
-                if (error.message.includes('not supported')) {
-                    errorMessage += '• Bluetooth not supported on this device\n• Try using Chrome browser';
-                } else if (error.message.includes('User cancelled')) {
-                    errorMessage += '• Connection cancelled by user';
-                } else {
-                    errorMessage += `• ${error.message}`;
-                }
-                
-                errorMessage += '\n\n🔧 Troubleshooting:\n• Ensure printer is turned ON\n• Put printer in pairing mode\n• Make sure printer is not connected to other devices\n• Try turning Bluetooth off and on\n• Clear browser cache and try again';
-                
-                alert(errorMessage);
+                // Show alternative connection methods
+                showBluetoothFailureOptions();
                 return false;
             }
+        }
+
+        function showBluetoothFailureOptions() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full">
+                    <h3 class="text-xl font-bold text-red-600 mb-4">❌ Bluetooth Connection Failed</h3>
+                    <p class="text-gray-600 mb-4">Don't worry! Here are alternative ways to print:</p>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="bg-blue-50 p-3 rounded-lg">
+                            <div class="font-semibold text-blue-800">📱 Method 1: Use Printer App</div>
+                            <div class="text-sm text-blue-600">Connect your phone to printer via the manufacturer's app, then use "Share" to print receipts</div>
+                        </div>
+                        
+                        <div class="bg-green-50 p-3 rounded-lg">
+                            <div class="font-semibold text-green-800">🔧 Method 2: Manual Pairing</div>
+                            <div class="text-sm text-green-600">Pair printer in Android Settings → Bluetooth, then try connecting again</div>
+                        </div>
+                        
+                        <div class="bg-amber-50 p-3 rounded-lg">
+                            <div class="font-semibold text-amber-800">📋 Method 3: Copy Receipt</div>
+                            <div class="text-sm text-amber-600">Copy receipt text and paste into any printing app</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <button onclick="connectViaApp()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all">
+                            📱 Try Printer App Method
+                        </button>
+                        <button onclick="showManualInstructions()" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all">
+                            🔧 Show Manual Setup
+                        </button>
+                        <button onclick="closeFailureModal()" class="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition-all">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            window.closeFailureModal = () => {
+                document.body.removeChild(modal);
+            };
+        }
+
+        async function connectViaApp() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">📱 Connect Via Printer App</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-800 mb-2">Step 1: Download Printer App</h4>
+                            <p class="text-sm text-green-700 mb-3">Search for your printer brand in Play Store:</p>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div>• Xprinter</div>
+                                <div>• GOOJPRT</div>
+                                <div>• MUNBYN</div>
+                                <div>• iDPRT</div>
+                                <div>• HPRT</div>
+                                <div>• Generic Thermal</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-800 mb-2">Step 2: Connect in App</h4>
+                            <p class="text-sm text-blue-700">Open the app and connect to your printer via Bluetooth</p>
+                        </div>
+                        
+                        <div class="bg-amber-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-amber-800 mb-2">Step 3: Print from Hope Cafe</h4>
+                            <p class="text-sm text-amber-700">When you complete an order, we'll show you the receipt text to copy and print in your printer app</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 space-y-2">
+                        <button onclick="enableAppMode()" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all">
+                            ✅ Enable App Mode
+                        </button>
+                        <button onclick="closeAppModal()" class="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition-all">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            window.enableAppMode = () => {
+                // Set app mode flag
+                localStorage.setItem('hopePrinterMode', 'app');
+                updatePrinterStatus('📱 App mode enabled');
+                document.getElementById('quickConnectBtn').textContent = 'App Mode';
+                document.getElementById('quickConnectBtn').className = 'bg-green-600 text-white px-3 py-2 rounded-lg font-medium text-xs';
+                document.body.removeChild(modal);
+                alert('✅ App mode enabled!\n\nWhen you complete orders, we\'ll show you the receipt text to copy and print in your printer app.');
+                return true;
+            };
+            
+            window.closeAppModal = () => {
+                document.body.removeChild(modal);
+            };
+        }
+
+        async function showManualInstructions() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
+                    <h3 class="text-xl font-bold text-amber-600 mb-4">🔧 Manual Printer Setup</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-red-800 mb-2">🔴 Step 1: Prepare Printer</h4>
+                            <ul class="text-sm text-red-700 space-y-1">
+                                <li>• Turn ON your thermal printer</li>
+                                <li>• Make sure it has paper loaded</li>
+                                <li>• Put printer in pairing mode</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-blue-800 mb-2">📱 Step 2: Android Settings</h4>
+                            <ul class="text-sm text-blue-700 space-y-1">
+                                <li>• Go to Settings → Bluetooth</li>
+                                <li>• Turn ON Bluetooth</li>
+                                <li>• Scan for devices</li>
+                                <li>• Pair with your printer</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-green-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-green-800 mb-2">🌐 Step 3: Browser Setup</h4>
+                            <ul class="text-sm text-green-700 space-y-1">
+                                <li>• Use Chrome browser</li>
+                                <li>• Enable Location permission</li>
+                                <li>• Try connecting again</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-purple-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-purple-800 mb-2">💡 Common Issues</h4>
+                            <ul class="text-sm text-purple-700 space-y-1">
+                                <li>• Printer not showing? Check pairing mode</li>
+                                <li>• Connection fails? Clear browser cache</li>
+                                <li>• Still issues? Use printer app method</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 space-y-2">
+                        <button onclick="retryConnection()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all">
+                            🔄 Try Connecting Again
+                        </button>
+                        <button onclick="closeManualModal()" class="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition-all">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            window.retryConnection = () => {
+                document.body.removeChild(modal);
+                connectViaBluetooth();
+            };
+            
+            window.closeManualModal = () => {
+                document.body.removeChild(modal);
+            };
+            
+            return true;
         }
 
         function updatePrinterStatus(status) {
@@ -1241,16 +1494,21 @@
         }
 
         function showEnhancedPrintOptions(orderData) {
+            const printerMode = localStorage.getItem('hopePrinterMode');
+            
             if (bluetoothCharacteristic) {
-                // Thermal printer is connected
+                // Thermal printer is connected via Bluetooth
                 const printChoice = confirm(`✅ Order completed successfully!\n\n📋 Order: ${orderData.orderNumber}\n👤 Customer: ${orderData.customerName}\n💰 Total: ₹${orderData.total.toFixed(2)}\n\n🖨️ Print receipt to thermal printer?\n\n• OK = Print receipt\n• Cancel = Skip printing\n\nYou can reprint from Sales History anytime.`);
                 
                 if (printChoice) {
                     printToEnhancedThermal(orderData);
                 }
+            } else if (printerMode === 'app') {
+                // App mode is enabled
+                showAppModePrintDialog(orderData);
             } else {
-                // No thermal printer connected
-                const connectChoice = confirm(`✅ Order completed successfully!\n\n📋 Order: ${orderData.orderNumber}\n👤 Customer: ${orderData.customerName}\n💰 Total: ₹${orderData.total.toFixed(2)}\n\n🖨️ No thermal printer connected.\n\n• OK = Connect printer and print\n• Cancel = Skip printing\n\n💡 Tip: Connect your Shreyans thermal printer for instant receipt printing.`);
+                // No printer connected
+                const connectChoice = confirm(`✅ Order completed successfully!\n\n📋 Order: ${orderData.orderNumber}\n👤 Customer: ${orderData.customerName}\n💰 Total: ₹${orderData.total.toFixed(2)}\n\n🖨️ No thermal printer connected.\n\n• OK = Connect printer and print\n• Cancel = Skip printing\n\n💡 Tip: Connect your thermal printer for instant receipt printing.`);
                 
                 if (connectChoice) {
                     connectAndroidThermalPrinter().then(connected => {
@@ -1260,6 +1518,112 @@
                     });
                 }
             }
+        }
+
+        function showAppModePrintDialog(orderData) {
+            const receiptText = generateReceiptText(orderData);
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-md w-full max-h-96 overflow-y-auto">
+                    <h3 class="text-xl font-bold text-green-600 mb-4">✅ Order Completed!</h3>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg mb-4">
+                        <div class="text-center">
+                            <div class="text-lg font-bold text-green-800">📋 ${orderData.orderNumber}</div>
+                            <div class="text-sm text-green-600">👤 ${orderData.customerName}</div>
+                            <div class="text-xl font-bold text-green-800">💰 ₹${orderData.total.toFixed(2)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h4 class="font-semibold text-blue-800 mb-2">📱 Print via App</h4>
+                        <p class="text-sm text-blue-700 mb-3">Copy the receipt below and paste it into your printer app:</p>
+                        <textarea id="receiptTextArea" class="w-full h-32 p-2 border border-blue-300 rounded text-xs font-mono bg-white" readonly>${receiptText}</textarea>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <button onclick="copyReceiptText()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-all">
+                            📋 Copy Receipt Text
+                        </button>
+                        <button onclick="shareReceipt()" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-all">
+                            📤 Share to Printer App
+                        </button>
+                        <button onclick="closeAppPrintModal()" class="w-full bg-gray-500 text-white p-3 rounded-lg hover:bg-gray-600 transition-all">
+                            Done
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            window.copyReceiptText = async () => {
+                try {
+                    await navigator.clipboard.writeText(receiptText);
+                    alert('✅ Receipt copied to clipboard!\n\nNow open your printer app and paste the receipt text.');
+                } catch (error) {
+                    // Fallback for older browsers
+                    document.getElementById('receiptTextArea').select();
+                    document.execCommand('copy');
+                    alert('✅ Receipt copied to clipboard!\n\nNow open your printer app and paste the receipt text.');
+                }
+            };
+            
+            window.shareReceipt = () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Receipt - ${orderData.orderNumber}`,
+                        text: receiptText
+                    }).catch(console.error);
+                } else {
+                    // Fallback to copy
+                    window.copyReceiptText();
+                }
+            };
+            
+            window.closeAppPrintModal = () => {
+                document.body.removeChild(modal);
+            };
+        }
+
+        function generateReceiptText(orderData) {
+            let receipt = '';
+            receipt += '================================\n';
+            receipt += '         HOPE CAFE\n';
+            receipt += '    Premium Coffee & Food\n';
+            receipt += '   123 Main Street, Your City\n';
+            receipt += '   Phone: +91 98765 43210\n';
+            receipt += '   Email: info@hopecafe.com\n';
+            receipt += '================================\n\n';
+            
+            receipt += `ORDER: ${orderData.orderNumber}\n`;
+            receipt += `Customer: ${orderData.customerName}\n`;
+            receipt += `Type: ${orderData.orderType}\n`;
+            receipt += `Payment: ${orderData.paymentMode}\n`;
+            receipt += `Date: ${new Date(orderData.timestamp).toLocaleDateString('en-IN')}\n`;
+            receipt += `Time: ${new Date(orderData.timestamp).toLocaleTimeString('en-IN')}\n\n`;
+            
+            receipt += 'ITEMS ORDERED:\n';
+            receipt += '================================\n';
+            
+            let totalItems = 0;
+            orderData.items.forEach(item => {
+                totalItems += item.quantity;
+                receipt += `${item.name}\n`;
+                receipt += `  ${item.quantity} x Rs.${item.rate.toFixed(2)} = Rs.${item.amount.toFixed(2)}\n`;
+            });
+            
+            receipt += '================================\n';
+            receipt += `Total Items: ${totalItems}\n\n`;
+            receipt += `TOTAL: Rs.${orderData.total.toFixed(2)}\n\n`;
+            receipt += 'Thank you for visiting!\n';
+            receipt += 'Please visit again\n\n';
+            receipt += 'Scan for feedback:\n';
+            receipt += 'hopecafe.com/feedback\n\n';
+            
+            return receipt;
         }
 
         async function printToEnhancedThermal(orderData) {
@@ -1376,7 +1740,20 @@
                 return;
             }
 
-            if (!bluetoothCharacteristic) {
+            const printerMode = localStorage.getItem('hopePrinterMode');
+
+            if (bluetoothCharacteristic) {
+                // Direct Bluetooth connection available
+                const confirmPrint = confirm(`🖨️ Reprint receipt?\n\n📋 Order: ${sale.orderNumber}\n👤 Customer: ${sale.customerName}\n💰 Total: ₹${sale.total.toFixed(2)}\n📅 Date: ${new Date(sale.timestamp).toLocaleDateString('en-IN')}\n\n• OK = Print receipt\n• Cancel = Cancel`);
+                
+                if (confirmPrint) {
+                    printToEnhancedThermal(sale);
+                }
+            } else if (printerMode === 'app') {
+                // App mode is enabled
+                showAppModePrintDialog(sale);
+            } else {
+                // No printer connected
                 const connectChoice = confirm(`❌ Thermal printer not connected!\n\n📋 Order: ${sale.orderNumber}\n👤 Customer: ${sale.customerName}\n💰 Total: ₹${sale.total.toFixed(2)}\n\n🔗 Connect printer now?`);
                 if (connectChoice) {
                     connectAndroidThermalPrinter().then(connected => {
@@ -1385,13 +1762,6 @@
                         }
                     });
                 }
-                return;
-            }
-
-            const confirmPrint = confirm(`🖨️ Reprint receipt?\n\n📋 Order: ${sale.orderNumber}\n👤 Customer: ${sale.customerName}\n💰 Total: ₹${sale.total.toFixed(2)}\n📅 Date: ${new Date(sale.timestamp).toLocaleDateString('en-IN')}\n\n• OK = Print receipt\n• Cancel = Cancel`);
-            
-            if (confirmPrint) {
-                printToEnhancedThermal(sale);
             }
         }
 
@@ -1530,5 +1900,5 @@
             saveDataToStorage();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9684ba4f2241ea32',t:'MTc1NDA0NDkzNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96df4a3a73b2179c',t:'MTc1NDk5NDU0OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
